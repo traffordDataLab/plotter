@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+        <meta name="keywords" content="plotter, plotting, map, maps, feature, features, geojson, spatial"/>
+        <meta name="description" content="Plotter is a web application running in the browser. It allows you to create and edit map features in the form of lines, polygons, circles and markers and save the results as a GeoJSON file."/>
+        <title>Trafford Data Lab: Plotter</title>
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin=""/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+        <link rel="stylesheet" href="https://www.trafforddatalab.io/css/labBase.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/trafforddatalab/lab_leaflet@v1.0.0/labLeafletMap.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.11.0/build/css/alertify.min.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.11.0/build/css/themes/default.min.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/trafforddatalab/leaflet.reachability@v1.0.0/leaflet.reachability.min.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/trafforddatalab/lab_leaflet@v1.0.0/leaflet.reachability_lab.min.css"/>
+
+        <style>
+            /* ### Overidden styles from leaflet.draw.css ### */
+            .leaflet-draw-toolbar .leaflet-draw-draw-polyline, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-draw-polyline
+            {
+                background-position: 5px 4px;
+            }
+
+            .leaflet-draw-toolbar .leaflet-draw-draw-polygon, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-draw-polygon
+            {
+            	background-position: -24px 4px;
+            }
+
+            .leaflet-draw-toolbar .leaflet-draw-draw-circle, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-draw-circle
+            {
+            	background-position: -85px 4px;
+            }
+
+            .leaflet-draw-toolbar .leaflet-draw-draw-marker, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-draw-marker
+            {
+            	background-position: -115px 4px;
+            }
+
+            /* Edit layer button - enabled and disabled states */
+            .leaflet-draw-toolbar .leaflet-draw-edit-edit.leaflet-disabled, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-edit.leaflet-disabled, .leaflet-draw-toolbar .leaflet-draw-edit-edit, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-edit
+            {
+            	background-position: -144px 4px;
+            }
+
+            /* Delete layer button - enabled and disabled states */
+            .leaflet-draw-toolbar .leaflet-draw-edit-remove.leaflet-disabled, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-remove.leaflet-disabled, .leaflet-draw-toolbar .leaflet-draw-edit-remove, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-remove
+            {
+            	background-position: -175px 4px;
+            }
+
+            /* Disabled state for edit and delete button */
+            .leaflet-draw-toolbar .leaflet-draw-edit-edit.leaflet-disabled, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-edit.leaflet-disabled, .leaflet-draw-toolbar .leaflet-draw-edit-remove.leaflet-disabled, .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-remove.leaflet-disabled
+            {
+                background-color: rgba(200, 200, 200, 0.8);
+            }
+
+            /* Position for the action menus attached to each draw control in the toolbar */
+            .leaflet-draw-actions
+            {
+                left: 38px;
+            }
+            .leaflet-touch .leaflet-draw-actions
+            {
+                left: 40px;
+            }
+
+            /* Height for the action menus attached to each draw control in the toolbar */
+            .leaflet-draw-actions a
+            {
+                line-height: 38px;
+                height: 38px;
+            }
+            .leaflet-touch .leaflet-draw-actions a
+            {
+                line-height: 39px;
+                height: 39px;
+            }
+
+
+            /* Alertify theme overidden styles */
+            .alertify .ajs-header
+            {
+                color: #757575;
+            }
+
+            .alertify .ajs-footer .ajs-buttons .ajs-button.ajs-ok, .alertify .ajs-footer .ajs-buttons .ajs-button.ajs-cancel
+            {
+                    color: #fc6721;
+            }
+
+            .alertify button:focus, .alertify input:focus
+            {
+                outline: 2px solid rgba(252, 103, 33, 0.2);
+            }
+
+
+            /* Custom styles for this app */
+            .mainPanelControl
+            {
+                width: 205px;
+            }
+
+            @media (max-width:620px)
+            {
+                .mainPanelControl
+                {
+                    width: 205px;   /* override the default 240px */
+                }
+            }
+
+            .infoDockContainer
+            {
+                max-height: 250px;
+            }
+
+            .labButton
+            {
+                font-size: 14px;
+                margin-top: 10px;
+            }
+
+            .propertiesTable
+            {
+                width: 100%;
+                font-size: 12px;
+                background-color: rgba(240,240,240,0.5);
+            }
+
+            .propertiesTable td
+            {
+                vertical-align: top;
+                border-bottom: 1px dotted #ccc;
+            }
+
+            .propertiesTable td:nth-child(1)
+            {
+                font-weight: bold;
+                width: 1%;
+                white-space: nowrap;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="map" class="mapFullScreen"></div>
+        <input type="file" id="localFileLoad" class="hideContent" onChange="localFileLoader(this)"/>
+
+        <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.62.0/dist/L.Control.Locate.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.11.0/build/alertify.min.js"></script>
+        <script src="https://www.trafforddatalab.io/assets/javascript/labError.js"></script>
+        <script src="https://www.trafforddatalab.io/assets/javascript/labAjax.js"></script>
+        <script src="https://www.trafforddatalab.io/assets/javascript/labGetQryStrValByKey.js"></script>
+        <script src="https://www.trafforddatalab.io/assets/javascript/labSpinner.js"></script>
+        <script src="https://www.trafforddatalab.io/assets/javascript/changeLuminosity.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/trafforddatalab/lab_leaflet@v1.0.0/labMarkerSVG.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/trafforddatalab/lab_leaflet@v1.0.0/labCreateTileLayer.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/trafforddatalab/lab_leaflet@v1.0.0/labLeafletMap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/trafforddatalab/lab_leaflet@v1.0.0/leaflet.reachability_lab_setup.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/trafforddatalab/leaflet.reachability@v1.0.0/leaflet.reachability.min.js"></script>
+
+        <script>
+            /*
+                ### Attributions and licences ###
+
+                Created:        2018/02/22 by James Austin - Trafford Data Lab
+                Purpose:        Allow users to create GeoJSON files easily
+                Dependencies:   Leaflet.js - (C) Vladimir Agafonkin http://leafletjs.com
+                                Leaflet.Draw plugin - (C) Jacob Toye https://github.com/Leaflet/Leaflet.draw
+                                Leaflet.Locate plugin - (C) Dominik Moritz https://github.com/domoritz/leaflet-locatecontrol
+                                Alertify.js - (C) Mohammad Younes http://alertifyjs.com
+                                Fontawesome - (C) Fonticons, Inc. All rights reserved https://fontawesome.com
+                                All other code by Trafford Data Lab
+
+                Licence:
+                                Leaflet: https://github.com/Leaflet/Leaflet/blob/master/LICENSE
+                                Leaflet.Draw: https://github.com/Leaflet/Leaflet.draw/blob/develop/MIT-LICENSE.md
+                                Leaflet.Locate: https://github.com/domoritz/leaflet-locatecontrol/blob/gh-pages/LICENSE
+                                Alertify: https://opensource.org/licenses/gpl-3.0
+                                Fontawesome: https://fontawesome.com/license
+                                Trafford Data Lab: http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+
+            */
+
+            /*
+                ### Set up the basic map in default state ###
+            */
+            var app = new LabLeafletMap({
+                title: 'Plotter',
+                about: '<span class="labButton" onclick="checkLoad()">Load <span class="fa fa-upload"></span></span> <span class="labButton" onclick="saveGeoJson()">Save <span class="fa fa-download"></span></span> <span class="labButton" style="margin-right: 0;" onclick="showDocs()">Docs <span class="fa fa-book"></span></span>',
+                info: '',
+                baseLayers: {
+                    "Aerial": labCreateTileLayer("Esri.WorldImagery"),
+                    "Buildings": labCreateTileLayer("Esri.WorldStreetMap"),
+                    "High detail": labCreateTileLayer("OpenStreetMap.Mapnik"),
+                    "Low detail": labCreateTileLayer("CartoDB.Positron"),
+                    "None": labCreateTileLayer(null)
+                },
+                aboutToggle: 1
+            });
+
+            // Add the reachability plugin
+            app.reachabilityControl = labSetupReachabilityPlugin({
+                // Common options are taken care of in the function, however the options below are extra
+                styleFn: labStyleIsolines,
+                clickFn: showLayerProps,
+                pane: 'pane_geography_overlay'
+            });
+            app.reachabilityControl.addTo(app.map);
+
+            L.DomUtil.addClass(app.infoDockContainer, 'hideContent');   // Initially hide the info container div
+
+            app.baseLayers['Low detail'].addTo(app.map);    // Choose the base/tile layer for the map
+
+            // Initialise the FeatureGroup to store editable layers
+            app.map.editableLayers = new L.FeatureGroup();
+            app.map.addLayer(app.map.editableLayers);
+
+            // Styling for features drawn by the user which have been saved previously and loaded. Mimics the settings of the draw plugin
+            app.styleUserFeatures = {
+                color: '#fc6721',
+                fillColor: '#fc6721',
+                weight: 4,
+                opacity: 0.5,
+                fillOpacity: 0.2,
+                dashArray: null
+            }
+
+            // Styling for the orientation geographies displayed as overlays
+            app.styleBoundary = {
+                color: '#212121',
+                weight: 2,
+                fillOpacity: 0
+            }
+
+            app.defFeatureId = 1;       // A counter to give a default id to the features if the user doesn't
+            app.featureCache = null;    // for caching the feature currently selected
+
+            // Add the Greater Manchester Local Authority boundaries to the map for orientation
+            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2016/gm_local_authority_full_resolution.geojson', function (data) {
+                app.labelLayer = new L.LayerGroup();
+
+                app.overlayLayers['GM Authorities'] = L.geoJSON(data, {
+                    attribution: app.attributionOS,
+                    style: app.styleBoundary,
+                    onEachFeature: function (feature, layer) {
+                        L.marker([feature.properties.lat,feature.properties.lon], { icon: L.divIcon({ iconSize: null }) }).bindTooltip(feature.properties.area_name, { direction: 'center', className: 'labLabels', opacity: 1, permanent: true }).addTo(app.labelLayer);
+                    }
+                });
+
+                app.overlayLayers['GM Authority Labels'] = app.labelLayer;
+
+                app.updateLayerControl();
+            });
+
+
+            /*
+                ### Setup the feature drawing tools ###
+            */
+
+            // Initialise the draw control and pass it the FeatureGroup of editable layers
+            app.drawControl = new L.Control.Draw({
+                edit: {
+                    featureGroup: app.map.editableLayers
+                },
+                draw: {
+                    polyline: {
+                        shapeOptions: {
+                            color: '#fc6721'
+                        }
+                    },
+                    polygon: {
+                        allowIntersection: false,
+                        drawError: {
+                            color: '#ff0000',
+                            timeout: 1000
+                        },
+                        shapeOptions: {
+                            color: '#fc6721'
+                        },
+                        showArea: true
+                    },
+                    circle: {
+                        shapeOptions: {
+                            color: '#fc6721'
+                        }
+                    },
+                    marker: {
+                        icon: labMarkerSVG({
+                            color: '#fc6721',
+                            size: 'medium'
+                        })
+                    },
+                    rectangle: false,
+                    circlemarker: false
+                },
+                position: 'bottomleft'
+            });
+            app.map.addControl(app.drawControl);
+
+
+            /*
+                ### Set up the map events ###
+            */
+
+            // when a draw toolbar object is created
+            app.map.on('draw:created', function (e) {
+                var type = e.layerType,
+                    layer = e.layer
+
+                // Add custom properties to the layer object to store in the GeoJSON later
+                layer.properties = {};
+                layer.properties.featureNum = app.defFeatureId++;   // Unique number for the feature
+
+                app.map.editableLayers.addLayer(layer);             // Add the newly created layer to the editableLayers layer group
+                layer.bindTooltip('Feature #' + layer.properties.featureNum);
+
+                // Add a user-defined label?
+                alertify.prompt('Label feature?', 'If you would like to label this feature please type in the box and select "OK", otherwise choose "CANCEL".', '', function (e, userLabelText) {
+                    if (e && userLabelText != '') {
+                        layer.properties.featureAlias = userLabelText;
+                        layer.bindTooltip('Feature #' + layer.properties.featureNum + ': ' + userLabelText);
+                    }
+                }, null);
+
+                // Store the layer type as there are some differences in the GeoJSON, e.g. circle doesn't exist in GeoJSON so is represented as a "point"
+                layer.type = type;
+                if (layer.type == 'circle') layer.properties.featureRadius = layer.getRadius();
+
+                // Add handler to layer to show properties onclick
+                layer.on('click', showLayerProps);
+            });
+
+            // when draw toolbar object(s) is/are deleted
+            app.map.on('draw:deleted', function (e) {
+                // if the user has deleted all features, reset the default feature id
+                if (app.map.editableLayers.getLayers().length == 0) app.defFeatureId = 1;
+
+                // reset the style of a previously selected feature
+                resetFeatureStyle();
+
+                // clear and hide the info panel
+                app.updateInfo();
+                if (L.DomUtil.hasClass(app.infoDockContainer, 'hideContent') == false) L.DomUtil.addClass(app.infoDockContainer, 'hideContent');
+            });
+
+            // when any draw toolbar tools are selected
+            app.map.on('draw:drawstart draw:editstart draw:deletestart', function (e) {
+                // deactivate draw and delete modes in the reachability plugin as the user has activated a leaflet draw toolbar function
+                if (app.reachabilityControl != null) {
+                    app.reachabilityControl._deactivateDraw();
+                    app.reachabilityControl._deactivateDelete();
+                }
+            });
+
+            // when the reachability draw or delete tools are activated
+            app.map.on('reachability:draw_activated reachability:delete_activated reachability:delete', function (e) {
+                // deactivate the leaflet draw tools if they were in draw/edit mode
+                app.drawControl._toolbars.draw.disable();
+                app.drawControl._toolbars.edit.disable();
+            });
+
+            // when the openrouteservice API call is started
+            app.map.on('reachability:api_call_start', function (e) {
+                // indicate to the user that something is happening at the start of the API call
+                startLabSpinner();
+            });
+
+            // when the openrouteservice API call is ended
+            app.map.on('reachability:api_call_end', function (e) {
+                // stop the spinner at the end of the API call
+                stopLabSpinner();
+            });
+
+            // when the user attempts to delete a reachability area
+            app.map.on('reachability:delete', function (e) {
+                // Check that the recently deleted isoline wasn't currently selected
+                if (app.featureCache != null) {
+                    var layer = app.featureCache;
+
+                    if (isIsolineLayer(layer) == false && isEditableLayer(layer) == false) {
+                        // The currently cached layer must've been an isoline which has now been deleted so reset the info panel and cache
+                        app.updateInfo();
+                        app.featureCache = null;
+                    }
+                }
+            });
+
+            // Reset the map state if any features have been selected
+            app.map.on('click', (function (e) {
+                // reset the style of a previously selected feature
+                resetFeatureStyle();
+
+                // clear and hide the info panel
+                app.updateInfo();
+            }));
+
+
+            /*
+                ### Functions to handle the showing of editable layer properties in the info panel and highlighting/resetting selected features ###
+            */
+
+            // Reset the styling of a previously selected feature
+            function resetFeatureStyle() {
+                if (app.featureCache != null) {
+                    var layer = app.featureCache;
+
+                    if (layer.type == 'marker') {
+                        layer.setIcon(labMarkerSVG({
+                                color: '#fc6721'
+                            })
+                        );
+                    }
+                    else if (isIsolineLayer(layer)) {
+                        app.reachabilityControl.isolinesGroup.resetStyle(layer);
+                    }
+                    else {
+                        layer.setStyle(app.styleUserFeatures);
+                    }
+
+                    app.featureCache = null; // clear the cache to prevent a situation where no feature is currently selected but the cache still contains the previously selected layer
+                }
+            }
+
+            // Show the properties of a selected editable layer
+            function showLayerProps(e) {
+                L.DomEvent.stopPropagation(e);  // stop the event bubbling to the map which would cause the information to be removed from the info panel etc.
+
+                var layer = e.target;
+                var propsTable = '';
+
+                // reset the style of a previously selected feature
+                resetFeatureStyle();
+
+                // add new selected feature to the cache
+                app.featureCache = layer;
+
+                // set the highlight style of the selected feature
+                if (layer.type == 'marker') {
+                    layer.setIcon(labMarkerSVG({
+                            color: '#ffea00'
+                        })
+                    );
+                }
+                else {
+                    layer.setStyle({
+                        fillColor: '#ffff00',
+                        fillOpacity: '0.5',
+                        color: '#ffea00',
+                        opacity: '1',
+                        dashArray: '5',
+                    });
+                }
+
+                // build the content for the properties table to be displayed
+                var props = null;
+
+                if (layer.hasOwnProperty('properties')) {
+                    props = layer.properties;
+                }
+                else if (layer.feature.hasOwnProperty('properties')) {
+                    props = layer.feature.properties;
+                }
+
+                if (props != null) {
+                    for (var key in props) {
+                        if (props.hasOwnProperty(key)) propsTable += '<tr><td>' + key + '</td><td>' + props[key] + '</td></tr>';
+                    }
+
+                    if (propsTable != '') {
+                        app.updateInfo('<table class="propertiesTable">' + propsTable + '</table>');
+                        if (L.DomUtil.hasClass(app.infoDockContainer, 'hideContent')) L.DomUtil.removeClass(app.infoDockContainer, 'hideContent');
+                    }
+                }
+            }
+
+
+            /*
+                ### Functions to determine which group a layer belongs to ###
+            */
+
+            // Determines whether the layer provided is an isoline
+            function isIsolineLayer(layer) {
+                if (app.reachabilityControl != null && app.reachabilityControl.isolinesGroup != null) {
+                    /*
+                        The following iteration is seemingly required as the expected code: app.reachabilityControl.isolinesGroup.hasLayer(layer) doesn't work.
+                        Each isoline or set of isolines (if intervals were created) are added to .isolinesGroup as a L.geoJSON object, thus they are effectively sub groups of .isolinesGroup.
+                        The loop iterates through each sub group and checks if the layer is present. If so we stop checking.
+                    */
+                    var arrGroups = app.reachabilityControl.isolinesGroup.getLayers();
+                    for (var i = 0; i < arrGroups.length; i++) {
+                        if (arrGroups[i].hasLayer(layer)) return true;
+                    }
+                }
+
+                return false;
+            }
+
+            // Determines whether the layer provided is an editable layer
+            function isEditableLayer(layer) {
+                return (app.map.editableLayers.hasLayer(layer)) ? true : false;
+            }
+
+
+            /*
+                ### Functions to handle saving and loading of files and displaying documentation ###
+            */
+
+            // To create the GeoJSON output of the objects drawn on the map
+            function saveGeoJson() {
+                if (app.map.editableLayers.getLayers().length > 0) {
+                    var ftrIndex = 0;   // index of the arrFeatures array to access the correct feature in the .eachLayer loop below
+                    app.outputGeoJson = app.map.editableLayers.toGeoJSON();
+
+                    app.map.editableLayers.eachLayer(function (layer) {
+                        // iterate through the properties object of each layer in the editable layers collection, adding the keys and values to the corresponding feature properties object in the GeoJSON
+                        if (layer.hasOwnProperty('properties')) {
+                            for (var key in layer.properties) {
+                                if (layer.properties.hasOwnProperty(key)) app.outputGeoJson.features[ftrIndex].properties[key] = layer.properties[key];
+                            }
+                        }
+
+                        ftrIndex++;
+                    });
+
+                    // Try to create a .geojson file to download
+                    try {
+                        var elDownload = document.createElement('a');
+                        elDownload.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(app.outputGeoJson, null, '\t')));
+                        elDownload.setAttribute('download', 'user_map_data.geojson');
+                        elDownload.style.display = 'none';
+                        document.body.appendChild(elDownload);
+                        elDownload.click();
+                        document.body.removeChild(elDownload);
+
+                        alertify.notify('<span class="fa fa-check fa-2x" style="color: #fc6721;"></span> <span style="color: #757575; font-weight: bold">GeoJSON file created</span>', '', 5, null);
+                    }
+                    catch(e) {
+                        // Alternative if we can't download the GeoJSON (non-HTML5 browsers) - open in a new window in a nicely Lab-styled page
+                        var downloadWin = window.open('', '_blank');
+                        var content = '<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto"/>';
+                        content += '<link rel="stylesheet" href="https://www.trafforddatalab.io/css/labBase.css"/>';
+                        content += '<link rel="stylesheet" href="https://www.trafforddatalab.io/css/labWebsite.css"/>';
+                        content += '<div class="container"><div class="header">';
+                        content += '<a href="https://www.trafforddatalab.io/index.html" target="_blank"><img src="https://www.trafforddatalab.io/assets/logo/trafforddatalab_logo.svg" alt="Trafford Data Lab" width="93" border="0" class="traffordDataLabLogo"/></a>';
+                        content += '<ul class="navbar noBulletPoints"><li class="menuItem"><a href="https://www.trafforddatalab.io/index.html" target="_blank">trafforddatalab.io</a></li><li class="menuItem">|</li><li class="menuItem"><a href="https://twitter.com/traffordDataLab" target="_blank">@traffordDataLab</a></li></ul></div>';
+                        content += '<div class="main"><h3>GeoJSON output of your drawn map item(s):</h3>';
+                        content += '<textarea id="mapOutput" rows="10" style="width: 100%; padding: 10px;">' + JSON.stringify(app.outputGeoJson) + '</textarea>';
+
+                        if (document.execCommand) content += '<br /><br /><button onclick="document.getElementById(\'mapOutput\').select(); document.execCommand(\'Copy\')" class="labButton">Copy code to clipboard</button>';
+
+                        content += '<p>Copy the code in the box above and paste into a text editor such as Notepad/TextEdit/Gedit etc. and save with the filename extension <strong>.geojson</strong>, e.g. &quot;<strong>mydata.geojson</strong>&quot;. You can then load the file back into Plotter, a GIS package or a custom application for further editing etc.</p></div>';
+                        content += '<div class="footer"><div class="leftFooter"><div class="license">Code <a class="footerLink" href="https://www.trafforddatalab.io/tools/LICENSE.txt" target="_blank">licensed</a> under MIT, data under OGL</div></div><div class="rightFooter"><a href="https://www.trafford.gov.uk" target="_blank"><img class="logoTrafford" src="https://www.trafforddatalab.io/images/trafford_council_logo_black_on_white_100px.png" alt="Trafford Council" border="0"/></a></div></div></div>'
+                        downloadWin.document.write(content);
+                    }
+                }
+                else {
+                    alertify.alert('Nothing to save...', 'Please draw some features using the shape tools.<br />Select <span class="labButton" style="margin-right: 0;" onclick="showDocs()">Docs <span class="fa fa-book"></span></span> for more help.');
+                }
+            }
+
+            // Check if the user wants to proceed with loading data if features are present/request the data from the user as either a URL or GeoJSON code
+            function checkLoad() {
+                var msg = 'Please choose one of the following methods then select <strong>OK</strong>.<ul><li><span class="labButton" style="margin: 0;" onclick="document.getElementById(\'localFileLoad\').click()">Choose a file</span> from your device</li> <li>Enter a URL of a GeoJSON file into the box</li> <li>Paste GeoJSON code into the box</li></ul>';
+
+                // check if there are currently editable features on the map - if so add a warning to the message to display
+                if (app.map.editableLayers.getLayers().length > 0) msg = '<span style="color: #fc6721; font-weight: bold;">WARNING: Your current spatial features will be removed</span><br /><br />' + msg;
+
+                app.loadPrompt = alertify.prompt('Load GeoJSON data', msg, '', function (e, userData) {
+                    if (e && userData != '') {
+                        userData = userData.replace(/^\s+|\s+$/gm,'');    // trim whitespace from either end of the string just in case
+
+                        if (userData.substring(0, 1) == '{') {
+                            // User has pasted what looks like GeoJSON content directly into the box or loaded it from their local device
+                            processGeoJson(userData);
+                        }
+                        else if (userData.substring(0, 8) == 'https://') {
+                            // User has entered a URL - attempt to load it
+                            remoteFileLoader(userData);
+                        }
+                        else {
+                            alertify.alert('Sorry, data couldn\'t be loaded...', 'If you tried to load a local file or paste in some code it appears that it wasn\'t valid GeoJSON.<br /><br />If you tried to load the data from a URL it must be from a secure server and start with <span style="font-weight: bold;">https://</span>.');
+                            return false;
+                        }
+                    }
+                    else {
+                        // There is nothing in the input box and the user clicked on OK
+                        alertify.alert('Sorry, nothing to display...', 'No data was supplied. Please check you are trying to load a GeoJSON file containing coordinates and try again.');
+                    }
+                }, null);
+            }
+
+            // Attempt to obtain a local file prior to processing
+            function localFileLoader(el) {
+                if (el.value != '') {
+                    try {
+                        var reader = new FileReader();
+               	        reader.onload = function (e) {
+                            app.loadPrompt.set({'value':e.target.result});
+               	        };
+                        reader.readAsText(el.files[0]);
+                        el.value = '';  // reset the value of the file input box in case the user chooses the same file again - as this would not result in the onchange event firing
+                    }
+                    catch(e) {
+                        // we can't use window.FileReader or something else went wrong so inform the user
+                        alertify.alert('Sorry, unable to load local file...','Unfortunately it is not possible to load local files using this browser. Please choose one of the other methods available for loading data.');
+                    }
+                }
+            }
+
+            // Attempt to obtain a remote file via URL
+            function remoteFileLoader(url) {
+                labAjax(url, function (data) {
+                    if (data == null || data == '') {
+                        alertify.alert('Sorry, data couldn\'t be loaded...', 'Please check you entered the URL correctly. If so, it may be that the file no longer exists, the URL has changed or the server rejected the request.');
+                        return false;
+                    }
+
+                    processGeoJson(data);
+                }, { type: 'txt' });    // Don't get labAjax to do the parsing - just return the content as-is and we parse it in the processGeoJson function
+            }
+
+            // Process the GeoJSON provided by the user - all methods of loading data call this function
+            function processGeoJson(data) {
+                try {
+                    data = JSON.parse(data);    // check the data we have been given is valid JSON. To check if valid GeoJSON here isn't necessary - If Leaflet can't draw anything we can alert the user, and if it errors then the exception will be caught.
+
+                    app.map.editableLayers.clearLayers();  // Destroy any current editable features
+                    app.defFeatureId = 1;   // reset the feature counter
+                    var arrFeatureIds = []; // array to hold the feature ids so that we can calculate the next in the series
+                    var tooltipTxt = '';
+                    var featureType = null;
+
+                    L.geoJSON(data, {
+                        style: app.styleUserFeatures,
+                        onEachFeature: function (feature, layer) {
+                            layer.properties = {};  // this object holds all the required properties for the app and any custom properties added by other applications etc.
+
+                            // iterate through the properties object of the feature adding the keys and values to the corresponding layer object
+                            if (feature.hasOwnProperty('properties')) {
+                                for (var key in feature.properties) {
+                                    if (feature.properties.hasOwnProperty(key)) layer.properties[key] = feature.properties[key];
+                                }
+                            }
+
+                            // check we have the required properties for the app, if not add them manually
+                            if (layer.properties.hasOwnProperty('featureNum') == false) {
+                                layer.properties.featureNum = app.defFeatureId++;   // no feature number found so assign the current value of our default id and then increment the id ready for the next feature
+                            }
+
+                            arrFeatureIds.push(layer.properties.featureNum);        // add the feature number to an array for later sorting to obtain the next id value for further new features
+
+                            // we need to discover the feature type - remember it is valid for this to be null!
+                            if (feature.hasOwnProperty('type')) {
+                                featureType = feature.type.toLowerCase();
+
+                                if (featureType == 'feature' || featureType == 'featurecollection') {
+                                    if (feature.hasOwnProperty('geometry') && feature.geometry.hasOwnProperty('type')) featureType = (feature.geometry.type !== null) ? feature.geometry.type.toLowerCase() : null;
+                                }
+                            }
+
+                            // based on the feature type we now need to set the correct layer type
+                            if (featureType == 'point' && feature.hasOwnProperty('properties') && feature.properties.hasOwnProperty('featureRadius') && feature.properties.featureRadius !== '') {
+                                layer.type = 'circle';  // special case as there is no circle in GeoJSON - therefore we can only distinguish between a circle and a point if we have a radius value
+                            }
+                            else if (featureType == 'point' || featureType == 'multipoint') {
+                                layer.type = 'marker';
+                            }
+                            else if (featureType == 'polygon' || featureType == 'multipolygon') {
+                                layer.type = 'polygon';
+                            }
+                            else if (featureType == 'linestring' || featureType == 'multilinestring') {
+                                layer.type = 'polyline';
+                            }
+                            else {
+                                layer.type = featureType;   // probably null
+                            }
+
+                            // create content for the tooltip
+                            tooltipTxt = 'Feature #' + layer.properties.featureNum;
+                            if (layer.properties.hasOwnProperty('featureAlias') && layer.properties.featureAlias !== '') tooltipTxt += ': ' + layer.properties.featureAlias;
+
+                            // add the layer to the editable layers featuregroup and bind tooltip
+                            app.map.editableLayers.addLayer(layer);
+                            layer.bindTooltip(tooltipTxt);
+
+                            // Add handler to layer to show properties onclick
+                            layer.on({
+                                click: showLayerProps
+                            });
+                        },
+                        pointToLayer: function (feature, latlng) {
+                            if (feature.hasOwnProperty('properties') && feature.properties.hasOwnProperty('featureRadius') && feature.properties.featureRadius !== '') {
+                                return L.circle(latlng, { radius: feature.properties.featureRadius });
+                            }
+                            else {
+                                return L.marker(latlng, { icon: labMarkerSVG({
+                                        color: '#fc6721'
+                                    })
+                                });
+                            }
+                        }
+                    });
+
+                    if (app.map.editableLayers.getLayers().length > 0) {
+                        // centre the map on the data that has been loaded
+                        app.map.fitBounds(app.map.editableLayers.getBounds());
+
+                        // Calculate the next id for any new features that are created
+                        arrFeatureIds.sort(function(a, b){return b - a});
+                        app.defFeatureId = ++arrFeatureIds[0];
+
+                        // clear and hide the info panel
+                        app.updateInfo();
+                        if (L.DomUtil.hasClass(app.infoDockContainer, 'hideContent') == false) L.DomUtil.addClass(app.infoDockContainer, 'hideContent');
+                    }
+                    else {
+                        // We have no editable layers, therefore the file either wasn't GeoJSON (but was valid JSON) or didn't contain any features/geometries etc.
+                        alertify.alert('Sorry, nothing to display...', 'The data you have tried to load doesn\'t contain anything that can be displayed. Please check you are trying to load a GeoJSON file containing coordinates and try again.');
+                    }
+                }
+                catch(e) {
+                    alertify.alert('Sorry, data couldn\'t be loaded...', 'The data you have tried to load doesn\'t seem to be valid GeoJSON. Please check and try again.');
+                    return false;
+                }
+            }
+
+            // Load the documentation
+            function showDocs() {
+                window.open('documentation.html', '_blank');
+            }
+
+
+            /*
+                ### Check if we have been passed a URL to a GeoJSON file in the QueryString ###
+            */
+            app.qsUrl = labGetQryStrValByKey('dataset');
+            if (app.qsUrl !== null && app.qsUrl.substring(0, 8) == 'https://') {
+                remoteFileLoader(app.qsUrl);    // User has entered a URL - attempt to load it
+            }
+            else if (app.qsUrl !== null) {
+                alertify.alert('Sorry, data couldn\'t be loaded...', 'To load the data from a URL it must be from a secure server and start with <span style="font-weight: bold;">https://</span>.');
+            }
+        </script>
+    </body>
+</html>
