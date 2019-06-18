@@ -208,7 +208,8 @@
                 // Common options are taken care of in the function, however the options below are extra
                 styleFn: labStyleIsolines,
                 clickFn: showLayerProps,
-                pane: 'pane_geography_overlay'
+                pane: 'pane_geography_overlay',
+                attributes: '"area","total_pop"'
             });
             app.reachabilityControl.addTo(app.map);
 
@@ -432,6 +433,7 @@
 
                 var layer = e.target;
                 var propsTable = '';
+                var isReachability = isIsolineLayer(layer);
 
                 // reset the style of a previously selected feature
                 resetFeatureStyle();
@@ -458,6 +460,7 @@
 
                 // build the content for the properties table to be displayed
                 var props = null;
+                var propsVal;
 
                 if (layer.hasOwnProperty('properties')) {
                     props = layer.properties;
@@ -468,7 +471,33 @@
 
                 if (props != null) {
                     for (var key in props) {
-                        if (props.hasOwnProperty(key)) propsTable += '<tr><td>' + key + '</td><td>' + props[key] + '</td></tr>';
+                        // Ensure that the key is a valid property of the GeoJson object and isn't a reachability range/area units or measure attribute (because we deal with these later)
+                        if (props.hasOwnProperty(key) && !(isReachability && (key.indexOf('units') > -1 || key == 'Measure'))) {
+                            propsVal = props[key];  // set to the raw value initially
+
+                            // The following are only applicable if the selected object is a reachability polygon
+                            if (isReachability) {
+                                switch (key) {
+                                    case 'Range':
+                                        propsVal = '0 - ' + props['Range'] + ' ' + props['Range units'];                        // Improves the presentation of the range information
+                                        break;
+
+                                    case 'Area':
+                                        propsVal = props['Area'] + ' ' + props['Area units'].replace('^2', '<sup>2</sup>');     // Improves the presentation of the area information
+                                        break;
+
+                                    case 'Latitude':
+                                    case 'Longitude':
+                                        propsVal = props[key].toFixed(4);                                                       // Reduce the precision of the lat/lng values to a sensible number
+                                        break
+
+                                    case 'Population':
+                                        propsVal = props[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");                 // Format the population number with commas separating thousands
+                                }
+                            }
+
+                            propsTable += '<tr><td>' + key + '</td><td>' + propsVal + '</td></tr>';                           // Create a row for the property table to display the key and value
+                        }
                     }
 
                     if (propsTable != '') {
