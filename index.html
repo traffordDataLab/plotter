@@ -293,6 +293,23 @@
                 app.updateLayerControl();
             });
 
+            //Add new Wards temporarylly
+            
+                        labAjax('https://www.trafforddatalab.io/maps/trafford_polling_stations/data/new_wards_w_centroids.geojson', function (data) {
+                app.labelLayer = new L.LayerGroup();
+
+                app.overlayLayers['LGBCE New Wards'] = L.geoJSON(data, {
+                    attribution: app.attributionOS,
+                    style: app.styleBoundary,
+                    onEachFeature: function (feature, layer) {
+                        L.marker([feature.properties.lat,feature.properties.lon], { icon: L.divIcon({ iconSize: null }) }).bindTooltip(feature.properties.Ward_name, { direction: 'center', className: 'labLabels', opacity: 1, permanent: true }).addTo(app.labelLayer);
+                    }
+                });
+
+                app.overlayLayers['LGBCE New Wards Labels'] = app.labelLayer;
+
+                app.updateLayerControl();
+            });
 
 
             /*
