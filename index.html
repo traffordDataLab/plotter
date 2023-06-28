@@ -141,6 +141,12 @@
                 width: 1%;
                 white-space: nowrap;
             }
+
+            /* Work-around to prevent will-change CSS issue */
+            .leaflet-fade-anim .leaflet-tile,.leaflet-zoom-anim .leaflet-zoom-animated
+            {
+                will-change: auto !important;
+            }
         </style>
     </head>
 
@@ -202,7 +208,8 @@
                 },
                 aboutToggle: 1,
                 aboutToggleTooltipShow: 'Maximise panel',
-                aboutToggleTooltipHide: 'Minimise panel'
+                aboutToggleTooltipHide: 'Minimise panel',
+                attributes: { center: [53.4189, -2.33], zoom: 12, minZoom: 1, zoomDelta: 0.25, zoomSnap: 0 }
             });
 
             // Add the reachability plugin
@@ -219,9 +226,13 @@
 
             app.baseLayers['Low detail'].addTo(app.map);    // Choose the base/tile layer for the map
 
-            // Initialise the FeatureGroup to store editable layers
-            app.map.editableLayers = new L.FeatureGroup();
+            // Initialise the FeatureGroup to store editable and non-editable layers
+            app.map.editableLayers = new L.FeatureGroup();      // this is for all the features that can be edited by the Leaflet.draw plugin
+            app.map.nonEditableLayers = new L.FeatureGroup();   // this is for all the features that can't be edited such as multipolygon/multilinestring
+
+            // Add the new FeatureGroups to the map
             app.map.addLayer(app.map.editableLayers);
+            app.map.addLayer(app.map.nonEditableLayers);
 
             // Styling for features drawn by the user which have been saved previously and loaded. Mimics the settings of the draw plugin
             app.styleUserFeatures = {
@@ -660,16 +671,21 @@
                 try {
                     data = JSON.parse(data);    // check the data we have been given is valid JSON. To check if valid GeoJSON here isn't necessary - If Leaflet can't draw anything we can alert the user, and if it errors then the exception will be caught.
 
-                    app.map.editableLayers.clearLayers();  // Destroy any current editable features
+                    // Destroy any current editable and non-editable features
+                    app.map.editableLayers.clearLayers();
+                    app.map.nonEditableLayers.clearLayers();
+
                     app.defFeatureId = 1;   // reset the feature counter
                     var arrFeatureIds = []; // array to hold the feature ids so that we can calculate the next in the series
                     var tooltipTxt = '';
                     var featureType = null;
+                    var isEditable = null;
 
                     L.geoJSON(data, {
                         style: app.styleUserFeatures,
                         onEachFeature: function (feature, layer) {
                             layer.properties = {};  // this object holds all the required properties for the app and any custom properties added by other applications etc.
+                            featureType = null;
 
                             // iterate through the properties object of the feature adding the keys and values to the corresponding layer object
                             if (feature.hasOwnProperty('properties')) {
@@ -689,12 +705,23 @@
                             if (feature.hasOwnProperty('type')) {
                                 featureType = feature.type.toLowerCase();
 
-                                if (featureType == 'feature' || featureType == 'featurecollection') {
-                                    if (feature.hasOwnProperty('geometry') && feature.geometry.hasOwnProperty('type')) featureType = (feature.geometry.type !== null) ? feature.geometry.type.toLowerCase() : null;
+                                if ((featureType == 'feature' || featureType == 'featurecollection') && (feature.hasOwnProperty('geometry') && feature.geometry.hasOwnProperty('type'))) {
+                                    featureType = (feature.geometry.type !== null) ? feature.geometry.type.toLowerCase() : null;
+                                }
+                                else if (featureType == 'point' && feature.hasOwnProperty('properties') && feature.properties.hasOwnProperty('featureRadius') && feature.properties.featureRadius !== '') {
+                                    featureType = 'circle';  // special case as there is no circle in GeoJSON - therefore we can only distinguish between a circle and a point if we have a radius value
                                 }
                             }
 
                             // based on the feature type we now need to set the correct layer type
+                            if (featureType == 'circle' || featureType == 'point' || featureType == 'polygon' || featureType == 'linestring') {
+                                app.map.editableLayers.addLayer(layer);
+                            }
+                            else {
+                                app.map.nonEditableLayers.addLayer(layer);
+                            }
+
+                            /*
                             if (featureType == 'point' && feature.hasOwnProperty('properties') && feature.properties.hasOwnProperty('featureRadius') && feature.properties.featureRadius !== '') {
                                 layer.type = 'circle';  // special case as there is no circle in GeoJSON - therefore we can only distinguish between a circle and a point if we have a radius value
                             }
@@ -710,13 +737,16 @@
                             else {
                                 layer.type = featureType;   // probably null
                             }
+                            */
+
+                            layer.type = featureType;
 
                             // create content for the tooltip
                             tooltipTxt = 'Feature #' + layer.properties.featureNum;
                             if (layer.properties.hasOwnProperty('featureAlias') && layer.properties.featureAlias !== '') tooltipTxt += ': ' + layer.properties.featureAlias;
 
                             // add the layer to the editable layers featuregroup and bind tooltip
-                            app.map.editableLayers.addLayer(layer);
+                            //app.map.editableLayers.addLayer(layer);
                             layer.bindTooltip(tooltipTxt);
 
                             // Add handler to layer to show properties onclick
@@ -737,10 +767,7 @@
                         }
                     });
 
-                    if (app.map.editableLayers.getLayers().length > 0) {
-                        // centre the map on the data that has been loaded
-                        app.map.fitBounds(app.map.editableLayers.getBounds());
-
+                    if (app.map.editableLayers.getLayers().length > 0 || app.map.nonEditableLayers.getLayers().length > 0) {
                         // Calculate the next id for any new features that are created
                         arrFeatureIds.sort(function(a, b){return b - a});
                         app.defFeatureId = ++arrFeatureIds[0];
@@ -748,6 +775,15 @@
                         // clear and hide the info panel
                         app.updateInfo();
                         if (L.DomUtil.hasClass(app.infoDockContainer, 'hideContent') == false) L.DomUtil.addClass(app.infoDockContainer, 'hideContent');
+
+                        // centre the map on the data that has been loaded
+                        if (app.map.editableLayers.getLayers().length > 0) {
+                            app.map.fitBounds(app.map.editableLayers.getBounds());
+                        }
+                        else {
+                            app.map.fitBounds(app.map.nonEditableLayers.getBounds());
+                            alertify.alert('Non-editable features...','Some of the features loaded cannot be edited as they are multi-type geometries.')
+                        }
                     }
                     else {
                         // We have no editable layers, therefore the file either wasn't GeoJSON (but was valid JSON) or didn't contain any features/geometries etc.
