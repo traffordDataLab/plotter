@@ -244,10 +244,10 @@
             app.featureCache = null;    // for caching the feature currently selected
 
             // Add the Greater Manchester Local Authority boundaries to the map for orientation
-            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2016/gm_local_authority_full_resolution.geojson', function (data) {
+            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2021/gm_local_authority_full_resolution.geojson', function (data) {
                 app.labelLayer = new L.LayerGroup();
 
-                app.overlayLayers['GM Authorities'] = L.geoJSON(data, {
+                app.overlayLayers['1. GM Authorities'] = L.geoJSON(data, {
                     attribution: app.attributionOS,
                     style: app.styleBoundary,
                     onEachFeature: function (feature, layer) {
@@ -255,16 +255,16 @@
                     }
                 });
 
-                app.overlayLayers['GM Authority Labels'] = app.labelLayer;
+                app.overlayLayers['1a. GM Authorities: Labels'] = app.labelLayer;
 
                 app.updateLayerControl();
             });
-
-            //Add Wards and Polling Districts temporary
-            labAjax('https://www.trafforddatalab.io/spatial_data/ward/2017/trafford_ward_full_resolution.geojson', function (data) {
+            
+            // Add the Trafford Local Authority boundaries to the map so that people can take screenshots of Trafford point data for reports
+            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2021/trafford_local_authority_full_resolution.geojson', function (data) {
                 app.labelLayer = new L.LayerGroup();
 
-                app.overlayLayers['Trafford Wards'] = L.geoJSON(data, {
+                app.overlayLayers['2. Trafford'] = L.geoJSON(data, {
                     attribution: app.attributionOS,
                     style: app.styleBoundary,
                     onEachFeature: function (feature, layer) {
@@ -272,15 +272,33 @@
                     }
                 });
 
-                app.overlayLayers['Trafford Wards Labels'] = app.labelLayer;
+                app.overlayLayers['2a. Trafford: Labels'] = app.labelLayer;
 
                 app.updateLayerControl();
             });
 
+            // Add Trafford Wards
+            labAjax('https://www.trafforddatalab.io/spatial_data/ward/2023/trafford_ward_full_resolution.geojson', function (data) {
+                app.labelLayer = new L.LayerGroup();
+
+                app.overlayLayers['3. Trafford Wards'] = L.geoJSON(data, {
+                    attribution: app.attributionOS,
+                    style: app.styleBoundary,
+                    onEachFeature: function (feature, layer) {
+                        L.marker([feature.properties.lat,feature.properties.lon], { icon: L.divIcon({ iconSize: null }) }).bindTooltip(feature.properties.area_name, { direction: 'center', className: 'labLabels', opacity: 1, permanent: true }).addTo(app.labelLayer);
+                    }
+                });
+
+                app.overlayLayers['3a. Trafford Wards: Labels'] = app.labelLayer;
+
+                app.updateLayerControl();
+            });
+
+            // Add Trafford Polling Districts
             labAjax('https://www.trafforddatalab.io/spatial_data/polling_districts/trafford_polling_districts.geojson', function (data) {
                 app.labelLayer = new L.LayerGroup();
 
-                app.overlayLayers['Polling Districts'] = L.geoJSON(data, {
+                app.overlayLayers['4. Trafford Polling Districts'] = L.geoJSON(data, {
                     attribution: app.attributionOS,
                     style: app.styleBoundary,
                     onEachFeature: function (feature, layer) {
@@ -288,25 +306,7 @@
                     }
                 });
 
-                app.overlayLayers['Polling Districts Labels'] = app.labelLayer;
-
-                app.updateLayerControl();
-            });
-
-            //Add new Wards temporarylly
-            
-                        labAjax('https://www.trafforddatalab.io/maps/trafford_polling_stations/data/new_wards_w_centroids.geojson', function (data) {
-                app.labelLayer = new L.LayerGroup();
-
-                app.overlayLayers['LGBCE New Wards'] = L.geoJSON(data, {
-                    attribution: app.attributionOS,
-                    style: app.styleBoundary,
-                    onEachFeature: function (feature, layer) {
-                        L.marker([feature.properties.lat,feature.properties.lon], { icon: L.divIcon({ iconSize: null }) }).bindTooltip(feature.properties.Ward_name, { direction: 'center', className: 'labLabels', opacity: 1, permanent: true }).addTo(app.labelLayer);
-                    }
-                });
-
-                app.overlayLayers['LGBCE New Wards Labels'] = app.labelLayer;
+                app.overlayLayers['4a. Trafford Polling Districts: Labels'] = app.labelLayer;
 
                 app.updateLayerControl();
             });
