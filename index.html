@@ -276,12 +276,12 @@
 
                 app.updateLayerControl();
             });
-
-            // Add Trafford Wards
-            labAjax('https://www.trafforddatalab.io/spatial_data/ward/2023/trafford_ward_full_resolution.geojson', function (data) {
+            
+            // Add the Trafford Locality boundaries to the map - useful for planning work, service-provision etc.
+            labAjax('https://www.trafforddatalab.io/spatial_data/council_defined/2023/trafford_localities_full_resolution.geojson', function (data) {
                 app.labelLayer = new L.LayerGroup();
 
-                app.overlayLayers['3. Trafford Wards'] = L.geoJSON(data, {
+                app.overlayLayers['3. Trafford Localities'] = L.geoJSON(data, {
                     attribution: app.attributionOS,
                     style: app.styleBoundary,
                     onEachFeature: function (feature, layer) {
@@ -289,7 +289,24 @@
                     }
                 });
 
-                app.overlayLayers['3a. Trafford Wards: Labels'] = app.labelLayer;
+                app.overlayLayers['3a. Trafford Localities: Labels'] = app.labelLayer;
+
+                app.updateLayerControl();
+            });
+
+            // Add Trafford Wards
+            labAjax('https://www.trafforddatalab.io/spatial_data/ward/2023/trafford_ward_full_resolution.geojson', function (data) {
+                app.labelLayer = new L.LayerGroup();
+
+                app.overlayLayers['4. Trafford Wards'] = L.geoJSON(data, {
+                    attribution: app.attributionOS,
+                    style: app.styleBoundary,
+                    onEachFeature: function (feature, layer) {
+                        L.marker([feature.properties.lat,feature.properties.lon], { icon: L.divIcon({ iconSize: null }) }).bindTooltip(feature.properties.area_name, { direction: 'center', className: 'labLabels', opacity: 1, permanent: true }).addTo(app.labelLayer);
+                    }
+                });
+
+                app.overlayLayers['4a. Trafford Wards: Labels'] = app.labelLayer;
 
                 app.updateLayerControl();
             });
@@ -298,7 +315,7 @@
             labAjax('https://www.trafforddatalab.io/spatial_data/polling_districts/trafford_polling_districts.geojson', function (data) {
                 app.labelLayer = new L.LayerGroup();
 
-                app.overlayLayers['4. Trafford Polling Districts'] = L.geoJSON(data, {
+                app.overlayLayers['5. Trafford Polling Districts'] = L.geoJSON(data, {
                     attribution: app.attributionOS,
                     style: app.styleBoundary,
                     onEachFeature: function (feature, layer) {
@@ -306,7 +323,7 @@
                     }
                 });
 
-                app.overlayLayers['4a. Trafford Polling Districts: Labels'] = app.labelLayer;
+                app.overlayLayers['5a. Trafford Polling Districts: Labels'] = app.labelLayer;
 
                 app.updateLayerControl();
             });
