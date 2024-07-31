@@ -327,6 +327,23 @@
 
                 app.updateLayerControl();
             });
+            
+            // Add the Trafford Creative Clusters boundaries to the map - useful for the cultural transformation work
+            labAjax('https://www.trafforddatalab.io/spatial_data/council_defined/2024/trafford_creative_clusters_full_resolution.geojson', function (data) {
+                app.labelLayer = new L.LayerGroup();
+
+                app.overlayLayers['6. Trafford Creative Clusters'] = L.geoJSON(data, {
+                    attribution: app.attributionOS,
+                    style: app.styleBoundary,
+                    onEachFeature: function (feature, layer) {
+                        L.marker([feature.properties.lat,feature.properties.lon], { icon: L.divIcon({ iconSize: null }) }).bindTooltip(feature.properties.area_name, { direction: 'center', className: 'labLabels', opacity: 1, permanent: true }).addTo(app.labelLayer);
+                    }
+                });
+
+                app.overlayLayers['6a. Trafford Creative Clusters: Labels'] = app.labelLayer;
+
+                app.updateLayerControl();
+            });
 
 
             /*
