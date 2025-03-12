@@ -167,7 +167,7 @@
             /*
                 ### Attributions and licences ###
 
-                Created:        2018/02/22 by James Austin - Trafford Data Lab
+                Created:        2018-02-22 by James Austin - Trafford Data Lab
                 Purpose:        Allow users to create GeoJSON files easily
                 Dependencies:   Leaflet.js - (C) Vladimir Agafonkin http://leafletjs.com
                                 Leaflet.Draw plugin - (C) Jacob Toye https://github.com/Leaflet/Leaflet.draw
@@ -244,7 +244,7 @@
             app.featureCache = null;    // for caching the feature currently selected
 
             // Add the Greater Manchester Local Authority boundaries to the map for orientation
-            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2021/gm_local_authority_full_resolution.geojson', function (data) {
+            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2023/gm_local_authority_full_resolution.geojson', function (data) {
                 app.labelLayer = new L.LayerGroup();
 
                 app.overlayLayers['1. GM Authorities'] = L.geoJSON(data, {
@@ -261,7 +261,7 @@
             });
             
             // Add the Trafford Local Authority boundaries to the map so that people can take screenshots of Trafford point data for reports
-            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2021/trafford_local_authority_full_resolution.geojson', function (data) {
+            labAjax('https://www.trafforddatalab.io/spatial_data/local_authority/2023/trafford_local_authority_full_resolution.geojson', function (data) {
                 app.labelLayer = new L.LayerGroup();
 
                 app.overlayLayers['2. Trafford'] = L.geoJSON(data, {
