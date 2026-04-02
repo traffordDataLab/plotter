@@ -52,6 +52,40 @@
                 border: 1px solid #ccc;
                 box-shadow: 0 0 0;
             }
+            
+            .demoImgContainer
+            {
+                position: relative;
+                display: inline-block;
+                float: left;
+                margin-right: 1em;
+            }
+            
+            .demoImgText
+            {
+                position: absolute;
+                top: 0.1em;
+                right: 0.25em;
+                color: #fc6721;
+                font-size: 3em;
+                font-weight: bold;
+            }
+            
+            .noFloat
+            {
+                padding-top: 1em;
+                clear: both;
+            }
+            
+            .backToTop
+            {
+                color: #5d77a3;
+            }
+            
+            .backToTop:hover
+            {
+                color: #00445e;
+            }
         </style>
     </head>
     <body>
@@ -65,44 +99,97 @@
                     <a href="https://www.trafforddatalab.io/index.html" aria-label="Return to Trafford Data Lab home page"><img src="https://www.trafforddatalab.io/assets/logo/trafforddatalab_logo.svg" alt="Trafford Data Lab" width="93" border="0" class="traffordDataLabLogo"/></a>
                 </nav>
             </header>
+            
+             <a id="top">&nbsp;</a>
 
             <main id="main">
                 <h1>Plotter documentation</h1>
                 <img src="docs_images/initial_load.png" width="450" alt="Initial load of application" class="screenshot" style="width: 450px; float: right; margin: 7px 0 0 15px;"/>
                 <ul>
                     <li><a href="#intro">Introduction</a></li>
+                    <li><a href="#demo">Demonstrations</a></li>
                     <li><a href="#familiar">Familiarisation</a></li>
                     <li><a href="#drawedit">Drawing and editing</a></li>
                     <li><a href="#load">Loading data</a></li>
                     <li><a href="#save">Saving data</a></li>
-                    <li><a href="#demo">Demonstrations</a></li>
                     <li><a href="#credits">Credits</a></li>
                 </ul>
                 <br />
                 
                 <a name="intro"></a><h2>Introduction</h2>
                 <p>
-                    <a href="index.html">Plotter</a> is a web application running in the browser. It allows you to create and edit map features in the form of lines, polygons, circles* and markers and save the results as a <a href="http://geojson.org/" target="_blank">GeoJSON</a> file. The saved file is downloaded to your device - there is no data saved in the cloud etc. Previously saved files can also be loaded back for further editing. These facilities are a very simplified form of those found in <a href="https://en.wikipedia.org/wiki/Geographic_information_system" target="_blank">Geographical Information Systems (GIS)</a>. Files saved by this application can be loaded into GIS applications for further editing.
+                    Plotter is a web application (app) running in the browser. It allows you to create and edit map features in the form of lines, polygons, <a href="#circles">circles</a> and markers and save the results as a <a href="http://geojson.org/">GeoJSON</a> file. The saved file is downloaded to your device - there is no data saved in the cloud etc. Previously saved files can also be loaded back for further editing. These facilities are a very simplified form of those found in <a href="https://en.wikipedia.org/wiki/Geographic_information_system">Geographical Information Systems (GIS)</a>. Files saved by this application can be loaded into GIS applications for further editing.
                 </p>
                 
                 <p>
                     Spatially referenced vector data represent different features on the surface of the earth as discrete points, lines, and polygons. Points represent discrete locations (e.g. CCTV cameras, bus stops), lines represent linear features (e.g. street, rivers), and polygons represent areas (e.g. borough boundaries, lakes). These features are overlayed on top of a base map - a representation of the world drawn to various scales which helps the viewer orientate and understand where those features are located.
                 </p>
 
+                <h3><a name="circles">Circles</a></h3>
                 <p class="italic">
-                    * The <a href="http://geojson.org/" target="_blank">GeoJSON</a> specification does not contain representations for circles. However, as circles can be useful to show buffers around places etc. we have decided to include them in this app. They are represented in the GeoJSON as a point with the radius stored as a property value. If you load GeoJSON created by this app which contains circles into other apps, they will be represented by a standard point located at the centre of the circles.
+                    The GeoJSON specification does not contain representations for circles. However, as circles can be useful to show buffers around places etc. we have decided to include them in this app. They are represented in the GeoJSON as a point with the radius stored as a property value. If you load GeoJSON created by this app which contains circles into other apps, they will be represented by a standard point located at the centre of the circles.
                 </p>
+                <a href="#top" class="backToTop"><span aria-label="return to the top of the page" class="fa-solid fa-circle-up"></span><span class="hideContent" aria-hidden="true">[Top]</span></a>
+                <br />
+                
+                <a name="demo"></a><h2>Demonstrations</h2>
+                <p>
+                    To give a quick idea of what you can do with Plotter, the following demonstrates drawing a polygon:
+                </p>
+                <div>
+                    <div class="demoImgContainer">
+                        <img src="docs_images/draw_poly_demo1.png" alt="Step 1: Selecting the draw polygon icon in the toolbar" class="screenshot"/>
+                        <div class="demoImgText">1</div>
+                    </div>
+                    
+                    Select the draw polygon icon from the toolbar in the bottom-left corner of the screen. This is the second icon from the top of the toolbar which shows a five-sided shape filled in black. You will then be asked to choose a point on the map to begin drawing your polygon.
+                </div>
+                <div class="noFloat">
+                    <div class="demoImgContainer">
+                        <img src="docs_images/draw_poly_demo2.png" alt="Step 2: Choosing a point on the map to start drawing the polygon" class="screenshot"/>
+                        <div class="demoImgText">2</div>
+                    </div>
+                    
+                    After you have created the starting point you will then be asked to choose the next one. A dotted line between the first point and the cursor indicates where the line will be drawn. If you make a mistake you can use the &quot;Delete last point&quot; button in the toolbar, or &quot;Cancel&quot; to delete the whole shape.
+                </div>
+                <div class="noFloat">
+                    <div class="demoImgContainer">
+                        <img src="docs_images/draw_poly_demo3.png" alt="Step 3: Selecting further points on the map to create the shape" class="screenshot"/>
+                        <div class="demoImgText">3</div>
+                    </div>
+                    
+                    You then continue in the same way to draw your shape. Each time you choose a point on the map, an orange line is drawn to it from the previous point. The shape is also filled with a lighter orange colour. Once you have drawn three points the cursor message changes, informing you to complete the shape by selecting the first point. You can either do this or continue adding more points.
+                </div>
+                <div class="noFloat">
+                    <div class="demoImgContainer">
+                        <img src="docs_images/draw_poly_demo4.png" alt="Step 4: Selecting the first point again to complete the polygon" class="screenshot"/>
+                        <div class="demoImgText">4</div>
+                    </div>
+                    
+                    When you are ready to complete the shape either select the first point or the &quot;Finish&quot; button in the toolbar. The squares marking the individual points and the toolbar buttons will then disappear. You will then be asked if you want to label the shape you have drawn.
+                </div>
+                <br class="noFloat"/><br />
+                <p>
+                    Other demonstrations are available via the following short animations which open in new windows:
+                    <ul>
+                        <li><a href="docs_images/loading_demo.gif" target="_blank">Loading data via <abbr >URL</abbr> <em>(Uniform Resource Locator)</em></a></li>
+                        <li><a href="docs_images/buffer_demo.gif" target="_blank">Drawing a buffer</a></li>
+                        <li><a href="docs_images/marker_demo.gif" target="_blank">Creating a marker</a></li>
+                        <li><a href="docs_images/edit_demo.gif" target="_blank">Editing features</a></li>
+                    </ul>
+                </p>
+                <a href="#top" class="backToTop"><span aria-label="return to the top of the page" class="fa-solid fa-circle-up"></span><span class="hideContent" aria-hidden="true">[Top]</span></a>
                 <br />
 
                 <a name="familiar"></a><h2>Familiarisation</h2>
                 <p>
-                    When the application loads, the base map displayed is low detail grey-scale which highlights town and city names, initially positioned to show the borough of Trafford. (To further assist with orientation of this particular area, the boundary of each of the ten Local Authorities which make up the Greater Manchester region has been provided as an overlay layer which can be toggled on/off using the layer control show in the diagram below.<br /><span class="italic">NOTE: Although this is an example of a map feature, the layer is not editable as it is provided simply as a guide and will not appear in the output saved from the app.)</span>
+                    When Plotter loads, the base map displayed is low detail grey-scale which highlights town and city names, initially positioned to show the borough of Trafford. To further assist with orientation of this particular area, the boundary of Trafford, its localities and wards and each of the ten Local Authorities which make up the Greater Manchester region have been provided as overlay layers which can be toggled on/off using the layer control show in the diagram below.<br /><span class="italic">(NOTE: Although this is an example of a map feature, the layer is not editable as it is provided simply as a guide and will not appear in the output saved from the app.)</span>
                 </p>
                 <p>
-                    The top-left corner contains the map controls. The first zooms the map to your approximate location if you have a capable device and allow this feature (i.e. you will be asked if you are happy to share your location). The second item is a tool to show areas of reachability based on time or distance for different modes of travel using the <a href="https://openrouteservice.org/documentation/#/reference/isochrones" target="_blank">openrouteservice isochrones API</a>. You can find out more about reachability in our Medium article <a href="https://medium.com/@traffordDataLab/out-of-reach-introducing-our-distance-and-travel-time-plugin-859932cb12e5" target="_blank">&quot;Out of reach? Introducing our distance and travel time plugin&quot;</a>. Although this tool draws features on the map, they are not savable or editable like the ones you can create using the draw tools. This is because they are calculated features based on travel networks such as roads, footpaths etc. and so cannot be editable.
+                    The top-left corner contains the map controls. The first zooms the map to your approximate location if you have a capable device and allow this feature (i.e. you will be asked if you are happy to share your location). The second item is a tool to show areas of reachability based on time or distance for different modes of travel using the <a href="https://openrouteservice.org/documentation/#/reference/isochrones">openrouteservice isochrones API</a>. You can find out more about reachability in our Medium article <a href="https://medium.com/@traffordDataLab/out-of-reach-introducing-our-distance-and-travel-time-plugin-859932cb12e5">&quot;Out of reach? Introducing our distance and travel time plugin&quot;</a>. Although this tool draws features on the map, they are not savable or editable like the ones you can create using the draw tools. This is because they are calculated features based on travel networks such as roads, footpaths etc. and so cannot be editable.
                 </p>
                 <p>
-                    <img src="docs_images/layer_control.png" alt="Layer control" class="screenshot" style="float: left; margin: 7px 15px 0 0;"/>The third item is the layer control which allows you choose the map layers you wish to see. Selecting this control will reveal a choice of base maps giving different types of information and area details as well as the option to hide or show the Local Authority boundaries and name labels. The choice of base maps includes a satellite view and the option to not display a base map at all. The choices you make within the layer control do not affect the map features you create or the data saved by the application.
+                    <img src="docs_images/layer_control.png" alt="Layer control" class="screenshot" style="float: left; margin: 7px 15px 0 0;"/>The third item is the layer control which allows you choose the map layers you wish to see. Selecting this control will reveal a choice of base maps giving different types of information and area details as well as the option to hide or show the Local Authority boundaries and name labels. The choice of base maps includes a satellite view and the option to not display a base map at all. The choices you make within the layer control do not affect the map features you create or the data saved by Plotter.
                 </p>
                 <p>
                     The tools for drawing and editing map features are located in the bottom-left corner. The six buttons are split into two groups; the first four are the drawing tools - &quot;<span class="bold">line</span>&quot;, &quot;<span class="bold">polygon</span>&quot;, &quot;<span class="bold">circle</span>&quot; and &quot;<span class="bold">marker</span>&quot; whilst the last two are &quot;<span class="bold">edit</span>&quot; and &quot;<span class="bold">delete</span>&quot;.
@@ -113,6 +200,7 @@
                 <p>
                     You can zoom and move (pan) the map in a variety of ways depending on the device you are using. For mobile/touch devices you can zoom and pan by using the familiar pinch-to-zoom and touch-drag gestures. For desktop browsers you can zoom using the &plus; and &minus; keys, using a scroll wheel mouse, double-clicking on the map (zoom in)/holding shift while double-clicking (zoom out), click and drag a box (zoom in only) or via trackpad gestures on enabled devices. To pan on desktop browsers simply click and drag using either a mouse or trackpad.
                 </p>
+                <a href="#top" class="backToTop"><span aria-label="return to the top of the page" class="fa-solid fa-circle-up"></span><span class="hideContent" aria-hidden="true">[Top]</span></a>
                 <br />
 
                 <a name="drawedit"></a><h2>Drawing and editing</h2>
@@ -129,11 +217,20 @@
                 <p>
                     <img src="docs_images/delete.png" alt="Deleting features" class="screenshot" style="float: left; margin: 7px 15px 0 0;"/>You can also delete any unwanted features. Select the &quot;<span class="bold">delete</span>&quot; tool in the drawing toolbox and then select a feature to delete it, or choose the &quot;<span class="bold">Clear All</span>&quot; option to delete everything. Once you have removed the desired features you need to choose the &quot;<span class="bold">Save</span>&quot; button next to the delete tool. Again, it's important not to confuse this button with the main application <span class="labButton">Save <span class="fas fa-download"></span></span> button. If you change your mind about the features you have deleted, choosing the &quot;<span class="bold">Cancel</span>&quot; button will undo any changes.
                 </p>
+                <a href="#top" class="backToTop"><span aria-label="return to the top of the page" class="fa-solid fa-circle-up"></span><span class="hideContent" aria-hidden="true">[Top]</span></a>
                 <br />
 
                 <a name="load"></a><h2>Loading data</h2>
                 <p>
-                    The main application <span class="labButton">Load <span class="fas fa-upload"></span></span> button provides the ability to load GeoJSON data in three different ways: <br /><br />1. from your device or network, 2. via a URL or 3. by pasting the code directly into the box.<br /><br /> Either of these methods results in the map features represented in the file being drawn. The features are editable, just as if you had drawn them using the feature drawing tools. Most valid GeoJSON files can be loaded (with some exceptions due to size or complexity), not just those created using this application. If the data couldn't be loaded the application will try to inform you as to why.
+                    The main application <span class="labButton">Load <span class="fas fa-upload"></span></span> button provides the ability to load GeoJSON data in three different ways:
+                </p>
+                <ol>
+                    <li>from your device or network</li>
+                    <li>via a URL</li>
+                    <li>by pasting the code directly into the box</li>
+                </ol>
+                <p>
+                    Either of these methods results in the map features represented in the file being drawn. The features are editable, just as if you had drawn them using the feature drawing tools. Most valid GeoJSON files can be loaded (with some exceptions due to size or complexity), not just those created using this application. If the data couldn't be loaded the application will try to inform you as to why.
                 </p>
                 <p>
                     To load a GeoJSON file stored locally, (i.e. on the device or network you are connected to), select the <span class="labButton">Choose a file</span> option and then choose the file using the selection window.
@@ -144,15 +241,16 @@
                 <p>
                     To paste the GeoJSON code directly you will first need to open the file in any application that allows plain text content to be viewed, such as a text editor or even another another browser window/tab. Once you have the content of the file displayed, simply copy the whole content and paste it into the box provided in the <span class="labButton">Load <span class="fas fa-upload"></span></span> interface. Be sure to include the first &quot;<span class="bold">&#123;</span>&quot; and last &quot;<span class="bold">&#125;</span>&quot; characters otherwise you will receive an error message.
                 </p>
+                <a href="#top" class="backToTop"><span aria-label="return to the top of the page" class="fa-solid fa-circle-up"></span><span class="hideContent" aria-hidden="true">[Top]</span></a>
                 <br />
             
                 <a name="save"></a><h2>Saving data</h2>
                 <p>
                     The main application <span class="labButton">Save <span class="fas fa-download"></span></span> button creates a GeoJSON representation of the map features you have created (i.e. excluding the Local Authority boundaries and base map) and attempts to create a file named &quot;<span class="bold">user_map_data.geojson</span>&quot;. Depending on your operating system and web browser you will either; have the file automatically downloaded for you, be prompted for where you want to save the file, or see the contents of the file displayed in a new browser window/tab.
                 </p>
-                <h4>An example</h4>
+                <h3>An example</h3>
                 <p>
-                    The following is an example GeoJSON output from the application.
+                    The following is an example GeoJSON output from Plotter.
                 </p>
                 <p>
                     <span class="code">
@@ -180,14 +278,9 @@
                     </span>
                 </p>
                 <p>
-                    To load this data back into the application as a test follow these steps: <ol><li>copy the code above</li><li><a href="index.html" target="_blank">open the application</a></li><li>select <span class="labButton">Load <span class="fas fa-upload"></span></span></li><li>paste the code into the box provided</li><li>select <span class="bold">OK</span> to see the result on the map</li></ol>
+                    To load this data back into Plotter as a test follow these steps: <ol><li>copy the code above</li><li>select <span class="labButton">Load <span class="fas fa-upload"></span></span> within the Plotter app</li><li>paste the code into the box provided</li><li>select <span class="bold">OK</span> to see the result on the map</li></ol>
                 </p>
-                <br />
-
-                <a name="demo"></a><h2>Demonstrations</h2>
-                <p>
-                    <a href="docs_images/loading_demo.gif" target="_blank">Loading data via URL</a> | <a href="docs_images/buffer_demo.gif" target="_blank">Drawing a buffer</a> | <a href="docs_images/marker_demo.gif" target="_blank">Creating a marker</a> | <a href="docs_images/edit_demo.gif" target="_blank">Editing features</a>
-                </p>
+                <a href="#top" class="backToTop"><span aria-label="return to the top of the page" class="fa-solid fa-circle-up"></span><span class="hideContent" aria-hidden="true">[Top]</span></a>
                 <br />
 
                 <a name="credits"></a><h2>Credits</h2>
@@ -195,13 +288,14 @@
                     Plotter was created using the following:
                 </p>
                 <ul>
-                    <li><a href="http://leafletjs.com" target="_blank">Leaflet.js</a> - (C) Vladimir Agafonkin (<a href="https://github.com/Leaflet/Leaflet/blob/master/LICENSE" target="_blank">LICENCE</a>)</li>
-                    <li><a href="https://github.com/Leaflet/Leaflet.draw" target="_blank">Leaflet.Draw plugin</a> - (C) Jacob Toye (<a href="https://github.com/Leaflet/Leaflet.draw/blob/develop/MIT-LICENSE.md" target="_blank">LICENCE</a>)</li>
-                    <li><a href="https://github.com/domoritz/leaflet-locatecontrol" target="_blank">Leaflet.Locate plugin</a> - (C) Dominik Moritz (<a href="https://github.com/domoritz/leaflet-locatecontrol/blob/gh-pages/LICENSE" target="_blank">LICENCE</a>)</li>
-                    <li><a href="http://alertifyjs.com" target="_blank">Alertify.js</a> - (C) Mohammad Younes (<a href="https://opensource.org/licenses/gpl-3.0" target="_blank">LICENCE</a>)</li>
-                    <li><a href="https://fontawesome.com" target="_blank">Fontawesome</a> - (C) Fonticons, Inc. All rights reserved (<a href="https://fontawesome.com/license" target="_blank">LICENCE</a>)</li>
-                    <li>All other code by <a href="https://www.trafforddatalab.io" target="_blank">Trafford Data Lab</a> (<a href="https://github.com/traffordDataLab/plotter/blob/master/LICENSE" target="_blank">LICENCE</a>)</li>
+                    <li><a href="http://leafletjs.com">Leaflet.js</a> - (C) Vladimir Agafonkin (<a href="https://github.com/Leaflet/Leaflet/blob/master/LICENSE">Leaflet licence</a>)</li>
+                    <li><a href="https://github.com/Leaflet/Leaflet.draw">Leaflet.Draw plugin</a> - (C) Jacob Toye (<a href="https://github.com/Leaflet/Leaflet.draw/blob/develop/MIT-LICENSE.md">Leaflet.Draw licence</a>)</li>
+                    <li><a href="https://github.com/domoritz/leaflet-locatecontrol">Leaflet.Locate plugin</a> - (C) Dominik Moritz (<a href="https://github.com/domoritz/leaflet-locatecontrol?tab=MIT-1-ov-file">Leaflet.Locate licence</a>)</li>
+                    <li><a href="http://alertifyjs.com">Alertify.js</a> - (C) Mohammad Younes (<a href="https://opensource.org/licenses/gpl-3.0">Alertify licence</a>)</li>
+                    <li><a href="https://fontawesome.com">Fontawesome</a> - (C) Fonticons, Inc. All rights reserved (<a href="https://fontawesome.com/license">Fontawesome licence</a>)</li>
+                    <li>All other code by <a href="https://www.trafforddatalab.io">Trafford Data Lab</a> (<a href="https://github.com/traffordDataLab/plotter/blob/master/LICENSE">Plotter licence</a>)</li>
                 </ul>
+                <a href="#top" class="backToTop"><span aria-label="return to the top of the page" class="fa-solid fa-circle-up"></span><span class="hideContent" aria-hidden="true">[Top]</span></a>
             </main>
 
             <footer id="footer">
